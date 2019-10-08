@@ -1,20 +1,17 @@
 package com.dreis.app.controller;
 
 import com.dreis.app.dao.PlaceDAO;
+import com.dreis.app.dto.PlaceDTO;
 import com.dreis.app.model.Place;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import javax.xml.ws.Response;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @RestController
 @RequestMapping("/places")
@@ -28,42 +25,33 @@ public class PlaceController {
         return this.placeDAO.findAll();
     }
 
-    @GetMapping("/all")
-    public Response<Place> getPlaces(@RequestParam("id") Long id) {
+    @GetMapping(value = "/find/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
+    public ResponseEntity<Place> getPlaces(@PathVariable("id") Long id) {
         Optional<Place> placeOptional = this.placeDAO.findById(id);
         if (placeOptional.isPresent()) {
-            return new Response<Place>() {
-                @Override
-                public Map<String, Object> getContext() {
-                    return null;
-                }
-
-                @Override
-                public boolean cancel(boolean b) {
-                    return false;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return false;
-                }
-
-                @Override
-                public Place get() throws InterruptedException, ExecutionException {
-                    return null;
-                }
-
-                @Override
-                public Place get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
-                    return null;
-                }
-            }placeOptional.get();
+            return ResponseEntity.ok().body(placeOptional.get());
         }
+        return ResponseEntity.notFound().build();
+    }
 
+    @PostMapping(value = "/add", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> addPlace(@RequestBody PlaceDTO placeDto) {
+        Place place = Place.of(placeDto);
+        place.setCreatedAt(new Date());
+        placeDAO.save(place);
+        return new ResponseEntity<>(place.getId(), HttpStatus.CREATED);
+    }
+
+    @PutMapping(value = "/update/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
+    public ResponseEntity<Place> updatePlace(@PathVariable Long id, @RequestBody PlaceDTO placeDTO) {
+        Optional<Place> placeOptional = this.placeDAO.findById(id);
+        if (placeOptional.isPresent()) {
+            Place place = placeOptional.get();
+            place.copy(placeDTO);
+            place.setUpdatedAt(new Date());
+            placeDAO.save(place);
+            return ResponseEntity.ok().body(place);
+        }
+        return ResponseEntity.notFound().build();
     }
 }
