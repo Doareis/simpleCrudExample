@@ -42,7 +42,7 @@ public class PlaceController {
         return new ResponseEntity<>(place.getId(), HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/update/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
+    @PostMapping(value = "/update/{id}", produces = MediaType.APPLICATION_JSON_VALUE )
     public ResponseEntity<Place> updatePlace(@PathVariable Long id, @RequestBody PlaceDTO placeDTO) {
         Optional<Place> placeOptional = this.placeDAO.findById(id);
         if (placeOptional.isPresent()) {

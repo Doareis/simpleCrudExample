@@ -3,11 +3,12 @@ package com.dreis.app.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @AllArgsConstructor(staticName = "of")
-public class PlaceDTO {
+public class PlaceDTO implements Serializable {
 
     private String name;
 
@@ -16,8 +17,4 @@ public class PlaceDTO {
     private String city;
 
     private String state;
-
-    private Date createdAt;
-
-    private Date updatedAt;
 }
